@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#650000">
+  <title>Crimson Chat</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/lab.css">
+  <link rel="stylesheet" href="/suite.css">
+  <link rel="stylesheet" href="/quick-access.css">
+  <link rel="stylesheet" href="/map-upgrades.css">
+  <link rel="stylesheet" href="/mission-confirmation.css">
+  <link rel="stylesheet" href="/map-extras.css"><link rel="stylesheet" href="/live-direction.css">
+  <script defer src="/socket.io/socket.io.js"></script>
+  <script defer src="/app.js"></script>
+<link rel="stylesheet" href="/creator-dossier.css"><link rel="stylesheet" href="/time-lens.css"></head>
+<body>
+  <main class="app-shell">
+    <section id="joinScreen" class="join-screen">
+      <div class="join-header">CRIMSON CHAT</div>
+      <div class="join-card">
+        <div class="join-caption">SIX PERSON NETWORK</div>
+        <h1>join chat</h1>
+        <p>Enter your name to access the public and private chats.</p>
+        <form id="joinForm">
+          <label for="nameInput">name</label>
+          <input id="nameInput" name="name" maxlength="20" minlength="2" autocomplete="nickname" placeholder="your name" required>
+          <button type="submit">enter</button>
+        </form>
+        <p class="join-status" id="slotText">0 / 6 people online</p>
+        <p id="joinError" class="join-error" role="alert"></p>
+      </div>
+    </section>
+
+    <section id="mainScreen" class="main-screen hidden" aria-label="Chat interface">
+      <header id="topbar" class="topbar">
+        <div id="publicNav" class="person-tabs" aria-label="Select a person">
+          <div id="usersNav" class="people-grid"></div>
+        </div>
+        <div id="privateNav" class="simple-header hidden">
+          <button id="backFromPrivate" class="back-button" type="button" aria-label="Back to public chat">←</button>
+          <span id="privateName" class="header-title">name</span>
+          <button id="privateLive" class="private-live hidden" type="button"> live • watch</button>
+        </div>
+        <div id="mapNav" class="simple-header hidden">
+          <button id="backFromMap" class="back-button" type="button" aria-label="Back to chat">←</button>
+          <span class="header-title">map</span>
+        </div>
+        <button id="mapOpen" class="map-open" aria-label="Open map" title="Open map" type="button"><span></span><span></span><span></span></button>
+      </header>
+
+      <section id="chatScreen" class="chat-screen">
+        <div id="chatPanel" class="chat-panel">
+          <div class="chat-live-bar"><button id="goLiveButton" type="button"> go live</button><button id="voiceCallButton" type="button" class="hidden">voice call</button><button id="videoCallButton" type="button" class="hidden"> video call</button><button id="trustButton" type="button" class="hidden"> trust</button><span id="liveHint" aria-live="polite"></span><span id="trustStatus" class="trust-status"></span><span id="radioStatus" class="radio-status" role="status" aria-live="polite"></span><button id="radioListenButton" class="radio-listen" type="button" title="Enable radio audio playback">listen</button><label class="radio-effect-wrap" for="radioEffectSelect">FX<select id="radioEffectSelect" aria-label="Radio voice effect"><option value="clean">Clean</option><option value="comms">Walkie-talkie</option><option value="bass">Bass</option><option value="bright">Bright</option><option value="robot">Robot</option><option value="echo">Echo</option><option value="tunnel">Tunnel</option><option value="crunch">Crunch</option><option value="muffled">Muffled</option><option value="distant">Distant</option></select></label><label class="radio-chirp-wrap" title="Play radio transmit and receive beeps"><input id="radioChirps" type="checkbox" checked> Beeps</label></div>
+          <div id="animatedWallpaper" class="animated-wallpaper hidden" aria-hidden="true"></div>
+          <div class="ase-logo" aria-hidden="true"><span>ASE</span><small>SECURE NETWORK</small></div>
+          <div id="messages" class="messages" role="log" aria-live="polite"></div>
+          <form id="messageForm" class="composer">
+            <button id="photoButton" class="photo-button" type="button" aria-label="Choose a photo" title="Send photo"></button><button id="radioHoldButton" class="radio-hold-button" type="button" aria-label="Hold to talk in this chat" title="Hold to speak. Keyboard: hold R (outside text fields). Volume Up works only if your browser forwards key events.">RADIO</button>
+            <input id="photoInput" type="file" accept="image/*" hidden>
+            <input id="messageInput" type="text" autocomplete="off" maxlength="1500" aria-label="Type your message" placeholder="message" required>
+            <button type="submit" aria-label="Send message">send</button>
+          </form>
+        </div>
+        <div id="chatStatus" class="chat-status">public chat</div>
+      </section>
+
+      <section id="mapScreen" class="map-screen hidden">
+        <div class="map-panel">
+          <div id="visionMapHeader" class="vision-map-header hidden"><span>ASE / IMAGING CONSOLE</span><output id="visionMapTime">--:--:--</output></div>
+          <div class="map-actions">
+            <button id="pinButton" type="button">mark area</button>
+            <button id="pathButton" type="button">path</button>
+            <button id="mapPhotoButton" type="button">photo</button>
+            <button id="mapVideoButton" type="button">video</button><button id="emergencyButton" type="button">! emergency</button>
+          </div>
+          <div id="mapHelp" class="map-help">tap “mark area” or “path”</div>
+          <div id="mapCanvas" class="map-canvas" aria-label="Shared illustrated map image">
+            <img id="mapImage" src="/map-image.png" alt="Your cleaned-up map picture" draggable="false">
+            <svg id="mapLines" class="map-lines" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"></svg>
+            <div id="mapPins" class="map-pins"></div>
+            <div id="droneGrid" class="drone-grid" aria-hidden="true"></div>
+            <div id="aimReticle" class="aim-reticle" aria-hidden="true"><span></span></div>
+          </div>
+          <div id="terminalPad" class="terminal-pad hidden" aria-label="Move map cursor and place points">
+            <div class="pad-direction">
+              <button id="padUp" type="button" aria-label="Cursor up">UP</button>
+              <div class="pad-middle"><button id="padLeft" type="button" aria-label="Cursor left">LEFT</button><button id="padPlace" type="button" aria-label="Place point">place place</button><button id="padRight" type="button" aria-label="Cursor right">RIGHT</button></div>
+              <button id="padDown" type="button" aria-label="Cursor down">DOWN</button>
+            </div>
+            <div class="pad-info"><span>CURSOR / MAP CONTROL</span><output id="cursorCoords">50.0 / 50.0</output><small>choose MARK or PATH, move cursor, then PLACE</small></div>
+          </div>
+          <div id="draftActions" class="draft-actions hidden">
+            <span id="draftCount">0 points</span>
+            <button id="undoPoint" type="button">undo</button>
+            <button id="cancelDraft" type="button">cancel</button>
+            <button id="finishPath" type="button">finish</button>
+          </div>
+          <div class="map-list-head"><span id="mapVisibility">public map</span><span id="annotationCount">0 saved</span></div>
+          <div class="map-tabs" role="tablist" aria-label="Map items">
+            <button id="marksTab" type="button" role="tab" aria-selected="true" class="active">marks <span id="marksCount">0</span></button>
+            <button id="reportsTab" type="button" role="tab" aria-selected="false">reports <span id="reportsCount">0</span></button>
+          </div>
+          <div id="annotationList" class="annotation-list" role="tabpanel"></div>
+        </div>
+      </section>
+      <aside id="codeSidebar" class="code-sidebar hidden" aria-label="Code terminal navigation">
+        <div class="code-sidebar-title" id="codeSidebarTitle">// CODE MENU <span>LOCAL DISPLAY</span></div>
+        <div id="visionControls" class="vision-controls hidden">
+          <div class="vision-label">ASE / SPECTRUM SIMULATION</div>
+          <div class="vision-modes" role="group" aria-label="Map simulation filter">
+            <button type="button" data-spectrum="normal" class="selected">NORMAL</button>
+            <button type="button" data-spectrum="heat">HEAT</button>
+            <button type="button" data-spectrum="thermal">THERMAL</button>
+            <button type="button" data-spectrum="night">NIGHT</button>
+          </div>
+          <label class="vision-report-label" for="visionReportAge">TIME WINDOW</label>
+          <select id="visionReportAge" aria-label="Show reports from time period">
+            <option value="all">All reports</option>
+            <option value="15">Last 15 minutes</option>
+            <option value="60">Last hour</option>
+            <option value="1440">Last 24 hours</option>
+          </select>
+          <div id="visionTime" class="vision-time" aria-live="off">--:--:--</div>
+          <p class="vision-disclaimer">DISPLAY EFFECT ONLY · NOT A REAL THERMAL SENSOR</p>
+        </div>
+        <div class="code-status"><span id="codeClock">00:00</span><span class="code-online"> ACTIVE</span></div>
+        <div class="code-section-label">CONVERSATIONS</div>
+        <div id="codeUsers" class="code-users"></div>
+        <div class="code-section-label">MAP TOOLS</div>
+        <div class="code-tool-grid"><button id="codeMark" type="button">MARK</button><button id="codePath" type="button">PATH</button><button id="codeReports" type="button">REPORTS</button><button id="codeWalls" type="button">WALLPAPERS</button></div>
+        <div class="code-section-label">DISPLAY</div>
+        <button id="codeFilters" class="code-wide" type="button">FILTERS</button>
+        <button id="codeExit" class="code-exit" type="button">EXIT TERMINAL</button>
+      </aside>
+      <div id="rotateNotice" class="rotate-notice hidden"><strong>LANDSCAPE MODE</strong><p>Rotate your phone sideways to use the terminal map.</p><button id="rotateExit" type="button">exit terminal</button></div>
+      <div id="connectionStatus" class="connection-status">connecting…</div>
+    </section>
+    <div class="simulation-dock"><button id="simOpen" type="button" aria-expanded="false" aria-controls="simPanel">HACK SIM</button></div>
+    <aside id="simPanel" class="sim-panel hidden" aria-label="Cybersecurity training simulation">
+      <header class="sim-heading"><strong>ASE / TRAINING TERMINAL</strong><button id="simClose" type="button" aria-label="Close training panel">X</button></header>
+      <p class="sim-disclaimer">FICTIONAL GAME. No real private chats, map marks, or IP addresses are accessed.</p>
+      <label class="sim-opt-label"><input id="simOptIn" type="checkbox"> Allow other participants to challenge my simulated node and play an alarm</label>
+      <p class="sim-section">01 / SELECT TRAINING NODE</p>
+      <label for="simTarget">Target</label>
+      <select id="simTarget"><option value="">Choose a participant</option></select>
+      <div id="simCodeHint" class="sim-code-hint">Only opted-in participants show a challenge code here.</div>
+      <p class="sim-section">02 / DECODE ACCESS KEY</p>
+      <label for="simCode">Type the displayed code</label>
+      <input id="simCode" type="text" maxlength="32" autocomplete="off" placeholder="ASE-0000" spellcheck="false">
+      <button id="simProbe" type="button">REQUEST FAKE IP</button>
+      <p class="sim-section">03 / SOLVE CHECKSUM</p>
+      <div id="simPuzzle" class="sim-puzzle">Request a fake IP to receive the puzzle.</div>
+      <label for="simFakeIP">Fake IP address</label>
+      <input id="simFakeIP" type="text" autocomplete="off" placeholder="203.0.113.X" spellcheck="false">
+      <label for="simChecksum">Numeric checksum</label>
+      <input id="simChecksum" type="number" inputmode="numeric" placeholder="answer">
+      <button id="simUnlock" type="button">RUN TRAINING CHALLENGE</button>
+      <p class="sim-section">04 / SIMULATED DATA FEED</p>
+      <div class="sim-countdown" id="simCountdown">INACTIVE / 00:00</div>
+      <div id="simOutput" class="sim-output" role="status">No simulation running.</div>
+      <div id="simPreview" class="sim-preview"></div>
+      <label class="sim-opt-label"><input id="simSound" type="checkbox" checked> Enable synthesized square-wave and alert audio</label>
+      <button id="simStop" type="button">STOP SIMULATION</button>
+    </aside>
+    <div id="simAlarmBanner" class="sim-alarm-banner hidden" role="alert"><span id="simAlarmText">SIMULATION ALERT</span><button id="simDismissAlarm" type="button">DISMISS</button></div>
+    <div class="wallpaper-dock"><button id="wallpaperButton" type="button" title="Choose a wallpaper">walls</button></div>
+    <div id="wallpaperPanel" class="wallpaper-panel hidden" aria-label="Wallpapers">
+      <div class="wallpaper-heading"><strong>wallpapers</strong><button id="closeWallpapers" type="button" aria-label="Close wallpapers">X</button></div>
+      <p id="wallpaperInfo">20 patterns • type //CODEWALL in chat to unlock 20 more</p>
+      <div id="wallpaperGrid" class="wallpaper-grid"></div>
+    </div>
+    <div class="ui-filter-dock">
+      <button id="fullscreenButton" class="ui-filters-toggle" type="button" aria-label="Toggle fullscreen" title="Toggle fullscreen">[ ] full</button>
+      <button id="filtersButton" class="ui-filters-toggle" type="button" aria-expanded="false" aria-controls="filtersPanel" title="Adjust the entire interface">filters</button>
+    </div>
+          <div id="filtersPanel" class="filters-panel hidden" aria-label="Entire interface filters">
+            <div class="filters-heading">
+              <strong>screen filters</strong>
+              <button id="closeFilters" type="button" aria-label="Close screen filters">X</button>
+            </div>
+            <div class="filter-control">
+              <label for="gritSlider">grit <output id="gritValue" for="gritSlider">0%</output></label>
+              <input id="gritSlider" type="range" min="0" max="100" value="0" step="1">
+            </div>
+            <div class="filter-control">
+              <label for="contrastSlider">contrast <output id="contrastValue" for="contrastSlider">100%</output></label>
+              <input id="contrastSlider" type="range" min="50" max="200" value="100" step="1">
+            </div>
+            <div class="filter-control">
+              <label for="brightnessSlider">brightness <output id="brightnessValue" for="brightnessSlider">100%</output></label>
+              <input id="brightnessSlider" type="range" min="40" max="180" value="100" step="1">
+            </div>
+            <div class="filter-control">
+              <label for="hueSlider">hue <output id="hueValue" for="hueSlider">0°</output></label>
+              <input id="hueSlider" type="range" min="0" max="360" value="0" step="1">
+            </div>
+            <div class="filter-control">
+              <label for="saturationSlider">saturation <output id="saturationValue" for="saturationSlider">100%</output></label>
+              <input id="saturationSlider" type="range" min="0" max="200" value="100" step="1">
+            </div>
+            <div class="filters-bottom"><button id="resetFilters" type="button">reset filters</button><span>whole interface • only your view</span></div>
+          </div>
+    <div id="uiGrainOverlay" class="ui-grit-overlay" aria-hidden="true"></div>
+  </main>
+
+  <dialog id="noteDialog" class="note-dialog">
+    <form id="noteForm" method="dialog">
+      <div id="noteTitle" class="note-title">marker message</div>
+      <label for="noteInput">text bubble</label>
+      <textarea id="noteInput" maxlength="240" rows="3" placeholder="type a note for this spot"></textarea>
+      <div class="note-actions">
+        <button id="cancelNote" type="button">cancel</button>
+        <button type="submit">save</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="mapSourceDialog" class="media-dialog">
+    <div class="media-heading"><strong id="mapSourceTitle">map report</strong><button id="closeMapSource" type="button" aria-label="Close">X</button></div>
+    <p class="report-help">Take a new photo or record video inside this browser; or upload a file you already have.</p>
+    <div class="source-actions"><button id="takeMapMedia" type="button"> browser camera</button><button id="chooseMapMedia" type="button">choose file</button></div>
+  </dialog>
+  <input id="mapPhotoInput" type="file" accept="image/*" hidden>
+  <input id="mapPhotoCamera" type="file" accept="image/*" capture="environment" hidden>
+  <input id="mapVideoInput" type="file" accept="video/*" hidden>
+  <input id="mapVideoCamera" type="file" accept="video/*" capture="environment" hidden>
+  <dialog id="mapCaptureDialog" class="media-dialog map-capture-dialog">
+    <div class="media-heading"><strong id="mapCaptureTitle">BROWSER CAMERA</strong><button id="closeMapCapture" type="button" aria-label="Close camera">X</button></div>
+    <div class="map-capture-stage"><video id="mapCapturePreview" autoplay muted playsinline></video><span class="capture-cctv-label" id="mapCaptureClock">ASE · LIVE</span></div>
+    <p class="report-help" id="mapCaptureStatus">Allow camera permission to capture directly in this page.</p>
+    <div class="map-capture-actions">
+      <button id="flipMapCapture" type="button">flip CAMERA</button>
+      <button id="snapMapCapture" type="button"> TAKE PHOTO</button>
+      <button id="recordMapCapture" type="button" class="hidden"> RECORD</button>
+      <button id="stopMapCapture" type="button" class="hidden">■ STOP</button>
+    </div>
+    <p class="capture-footnote">In-browser capture only. Nothing is sent until you place and save the report. Video recordings are limited to 12 seconds / 8 MB.</p>
+  </dialog>
+  <dialog id="reportDialog" class="media-dialog">
+    <div class="media-heading"><strong>place report</strong><button id="closeReportDialog" type="button">X</button></div>
+    <p class="report-help">Save this report at the selected point on the map.</p>
+    <div class="cctv-media-stage" id="reportPreviewStage"><img id="reportPreviewImage" class="photo-preview hidden" alt="Report photo preview"><video id="reportPreviewVideo" class="report-video hidden" controls playsinline preload="metadata"></video><div id="reportPreviewStamp" class="cctv-stamp">ASE · CCTV PREVIEW</div></div>
+    <label for="reportNote">report message (optional)</label>
+    <textarea id="reportNote" maxlength="240" rows="2" placeholder="what happened here?"></textarea>
+    <div class="media-actions"><button id="cancelReport" type="button">cancel</button><button id="saveReport" type="button">save report</button></div>
+  </dialog>
+  <dialog id="reportViewer" class="media-dialog">
+    <div class="media-heading"><strong id="reportViewerTitle">report</strong><button id="closeReportViewer" type="button">X</button></div>
+    <div class="cctv-media-stage" id="reportViewerStage"><img id="reportViewerImage" class="photo-full hidden" alt="Map report photograph"><video id="reportViewerVideo" class="report-video hidden" controls playsinline preload="metadata"></video><div id="reportViewerStamp" class="cctv-stamp">ASE · CCTV</div></div>
+    <p id="reportViewerText" class="report-help"></p>
+  </dialog>
+  <dialog id="photoSourceDialog" class="media-dialog">
+    <div class="media-heading"><strong>send a photo</strong><button id="closePhotoSource" type="button">X</button></div>
+    <p class="report-help">Take a photo right in your browser, or choose one from your gallery.</p>
+    <div class="source-actions"><button id="openChatCamera" type="button">take photo</button><button id="openChatGallery" type="button">gallery</button></div>
+  </dialog>
+  <dialog id="chatCameraDialog" class="media-dialog">
+    <div class="media-heading"><strong>camera</strong><button id="closeChatCamera" type="button">X</button></div>
+    <video id="chatCameraVideo" autoplay muted playsinline class="camera-view"></video>
+    <div class="media-actions"><button id="flipChatCamera" type="button">flip reverse camera</button><button id="chatCameraFilters" type="button"> camera colors</button></div>
+    <p id="chatCameraInfo" class="report-help">Allow camera access to take a picture.</p>
+    <div class="source-actions"><button id="snapChatPhoto" type="button"> take photo</button><button id="useNativeCamera" type="button">device camera</button></div>
+  </dialog>
+  <input id="chatNativeCamera" type="file" accept="image/*" capture="environment" hidden>
+  <dialog id="photoDialog" class="media-dialog">
+    <div class="media-heading"><strong>send photo</strong><button id="closePhotoDialog" type="button">X</button></div>
+    <img id="photoPreview" class="photo-preview" alt="Photo preview">
+    <label for="photoCaption">message (optional)</label>
+    <input id="photoCaption" maxlength="200" placeholder="caption">
+    <div class="media-actions"><button id="cancelPhoto" type="button">cancel</button><button id="sendPhoto" type="button">send photo</button></div>
+  </dialog>
+  <dialog id="imageDialog" class="media-dialog">
+    <div class="media-heading"><strong id="imageTitle">photo</strong><button id="closeImageDialog" type="button">X</button></div>
+    <img id="imageFull" class="photo-full" alt="Enlarged chat photo">
+  </dialog>
+  <dialog id="liveDialog" class="media-dialog live-dialog">
+    <div class="media-heading"><strong id="liveTitle">live video</strong><button id="closeLiveDialog" type="button">X</button></div>
+    <video id="liveVideo" autoplay playsinline controls></video>
+    <div class="media-actions"><button id="flipLiveCamera" type="button" class="hidden">flip reverse camera</button><button id="liveCameraFilters" type="button" class="hidden"> camera colors</button></div>
+    <p id="liveInfo" role="status">Select a live broadcast or start your camera.</p>
+    <label id="microphoneLabel" class="microphone-option"><input id="micEnabled" type="checkbox"> include microphone audio</label>
+    <div class="media-actions"><button id="startLive" type="button">start camera</button><button id="stopLive" class="hidden" type="button">stop broadcasting</button></div>
+    <div id="recordControls" class="record-controls hidden">
+      <div class="record-heading">save a clip of YOUR live camera</div>
+      <div class="media-actions"><button id="recordClip" type="button"> record</button><button id="stopRecordClip" class="hidden" type="button">■ stop recording</button></div>
+      <p id="recordInfo" role="status">Up to 20 seconds. Only recorded if you press record.</p>
+      <video id="recordPreview" class="report-video hidden" controls playsinline></video>
+      <div class="media-actions"><button id="clipToMap" class="hidden" type="button">put clip on map</button><button id="discardClip" class="hidden" type="button">discard clip</button></div>
+    </div>
+  </dialog>
+  <dialog id="emergencyDialog" class="media-dialog">
+    <div class="media-heading"><strong>urgent location alert</strong><button id="cancelEmergency" type="button">X</button></div>
+    <p class="report-help">This is an in-app alert, NOT a call to emergency services. The other person must answer your call themselves.</p>
+    <label for="emergencyRecipient">send to</label><select id="emergencyRecipient"></select>
+    <div class="media-actions"><button id="sendEmergency" type="button">send alert + call</button></div>
+  </dialog>
+  <dialog id="emergencyAlert" class="media-dialog">
+    <div class="media-heading"><strong>urgent alert</strong><button id="emergencyAlertClose" type="button">X</button></div>
+    <p id="emergencyAlertText" class="report-help"></p>
+    <p class="report-help">A person shared a point with you. Calls must be answered manually.</p>
+    <div class="media-actions"><button id="emergencyAlertMap" type="button">view point</button><button id="emergencyAlertCall" type="button">call back</button></div>
+  </dialog>
+  <dialog id="privateCallDialog" class="media-dialog call-dialog">
+    <div class="media-heading"><strong id="callTitle">private call</strong><button id="closeCallDialog" type="button">X</button></div>
+    <div id="callStageSlot"><div id="callStage" class="call-stage"><video id="callRemoteVideo" autoplay playsinline></video><svg id="callRemoteDraw" class="call-draw-overlay remote-draw" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-label="Draw on their video"></svg><video id="callLocalVideo" autoplay muted playsinline></video><svg id="callLocalDraw" class="call-draw-overlay local-draw" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-label="Draw on your video"></svg><button id="exitCallFullscreen" type="button" class="exit-call-fullscreen hidden" aria-label="Exit call fullscreen">X exit fullscreen</button><div id="callAudioSymbol" class="call-audio-symbol">CALL</div></div></div>
+    <audio id="callRemoteAudio" autoplay></audio>
+    <p id="callInfo" class="report-help" role="status">Connecting…</p>
+    <div id="callExtraTools" class="call-extra-tools hidden">
+      <label class="voice-effect-label" for="voiceEffectSelect">voice effect
+        <select id="voiceEffectSelect" aria-label="Voice effect">
+          <option value="normal">Normal voice</option>
+          <option value="echo">01 · Echo</option>
+          <option value="deep">02 · Deep (bass)</option>
+          <option value="high">03 · High (treble)</option>
+          <option value="robot">04 · Robot</option>
+          <option value="radio">05 · Radio</option>
+          <option value="cave">06 · Cave</option>
+          <option value="alien">07 · Alien</option>
+          <option value="megaphone">08 · Megaphone</option>
+          <option value="whisper">09 · Whisper (airy)</option>
+          <option value="telephone">10 · Telephone</option>
+        </select>
+      </label>
+      <div class="call-draw-toolbar"><span>video overlay:</span><button id="callPointer" type="button" aria-pressed="false"> point</button><button id="callDraw" type="button" aria-pressed="false">/ draw</button><button id="callDrawOff" type="button">off</button></div>
+      <small id="callEffectHint">Tap your small camera preview to make it big; tap the other preview to switch back. Camera color filters also change how you see the other person. Voice effects change outgoing audio. Drawings fade after 2 seconds.</small>
+    </div>
+    <div class="media-actions" id="callIncomingActions"><button id="acceptCall" type="button">accept</button><button id="declineCall" type="button">decline</button></div>
+    <div class="media-actions hidden" id="callActiveActions"><button id="muteCall" type="button">mute mic</button><button id="reverseCallCamera" type="button" class="hidden">flip reverse</button><button id="callCameraFilters" type="button" class="hidden"> colors</button><button id="fullscreenCall" type="button" class="hidden">[ ] fullscreen</button><button id="hangupCall" type="button">end call</button></div>
+  </dialog>
+  <div id="miniCall" class="mini-call hidden" aria-label="Minimized private call">
+    <div id="miniCallHandle" class="mini-call-handle" title="Drag to move. Double tap to restore. Call stays connected."><span id="miniCallTitle"> PRIVATE CALL</span><button id="miniCallRestore" type="button" title="Restore call">□</button><button id="miniCallHangup" type="button" title="End call" aria-label="End call (disconnect)">END</button></div>
+    <div id="miniCallContent" class="mini-call-content" title="Double tap to open full call"></div>
+    <div class="mini-call-hint">drag header · double tap to open</div>
+  </div>
+  <dialog id="cameraFilterDialog" class="media-dialog camera-filter-dialog" aria-label="Separate camera color filters">
+    <div class="media-heading"><strong>CAMERA COLOR FILTERS</strong><button id="closeCameraFilters" type="button" aria-label="Close camera filters">X</button></div>
+    <p class="camera-filter-note">In calls, these color controls adjust BOTH video views on your screen; only your own outgoing camera may be filtered for the other person. They are independent of whole-screen filters.</p>
+    <div class="filter-control"><label for="camBrightness">brightness <output id="camBrightnessValue">100%</output></label><input id="camBrightness" type="range" min="40" max="180" value="100"></div>
+    <div class="filter-control"><label for="camContrast">contrast <output id="camContrastValue">100%</output></label><input id="camContrast" type="range" min="50" max="200" value="100"></div>
+    <div class="filter-control"><label for="camHue">hue <output id="camHueValue">0°</output></label><input id="camHue" type="range" min="0" max="360" value="0"></div>
+    <div class="filter-control"><label for="camSaturation">saturation <output id="camSaturationValue">100%</output></label><input id="camSaturation" type="range" min="0" max="200" value="100"></div>
+    <div class="media-actions"><button id="resetCameraFilters" type="button">reset camera</button><button id="doneCameraFilters" type="button">done</button></div>
+  </dialog>
+  <div id="toast" class="toast hidden" role="status"></div>
+
+  <!-- Ten independent fictional command consoles; they never access other users' private content. -->
+  <div class="ops-dock"><button id="opsDirectoryButton" type="button" aria-controls="opsDirectory">OPS / 10</button></div>
+  <aside id="opsDirectory" class="ops-directory hidden" aria-label="Ten ASE terminal codes">
+    <header><strong>ASE / TERMINAL INDEX</strong><button id="opsDirectoryClose" type="button" aria-label="Close terminal index">X</button></header>
+    <p>Type a command in the chat box, or choose a console here. All effects are local visual simulations.</p>
+    <div id="opsDirectoryList" class="ops-directory-list"></div>
+  </aside>
+  <section id="opsTerminal" class="ops-terminal hidden" role="dialog" aria-label="ASE fictional operations console" aria-modal="true" tabindex="-1">
+    <header class="ops-bar"><div class="ops-brand"><span id="opsDesignator">ASE // FROST</span><small id="opsSubtitle">FICTIONAL SIMULATION / LOCAL ONLY</small></div><output id="opsLocalClock" class="ops-clock">00:00:00</output><button id="opsBack" type="button">INDEX</button><button id="opsClose" type="button">EXIT</button></header>
+    <div id="opsBoard" class="ops-board">
+      <section class="ops-sector ops-sector-map" aria-label="Fictional scenario map">
+        <header><span id="opsMapTitle">SCENARIO MAP</span><span>SIMULATED / NOT LIVE</span></header>
+        <div id="opsMapStage" class="ops-map-stage" tabindex="0" aria-label="Simulated map, tap to drop a virtual marker">
+          <img src="/map-image.png" alt="ASE's supplied map picture, used for visual simulation only" draggable="false" />
+          <div class="ops-map-mesh" aria-hidden="true"></div>
+          <div id="opsFx" class="ops-fx" aria-hidden="true"></div>
+          <div id="opsPhantomMarkers" class="ops-phantom-markers" aria-hidden="true"></div>
+          <div class="ops-map-reticle" aria-hidden="true"><i></i></div>
+          <div class="ops-map-foot"><span>TRAINING GRID / 00.000</span><span id="opsGridPosition">X 50.0 / Y 50.0</span></div>
+        </div>
+        <footer><span id="opsMapReadout">MAP LINK / STANDBY</span><button id="opsClearMarkers" type="button">CLEAR SIM MARKS</button></footer>
+      </section>
+      <section class="ops-sector ops-sector-controls">
+        <header><span id="opsControlTitle">LOADOUT</span><span>SIMULATION</span></header>
+        <div id="opsAbilityList" class="ops-ability-list"></div>
+        <p id="opsAbilityHelp">Select a simulated module.</p>
+      </section>
+      <section class="ops-sector ops-sector-telemetry">
+        <header><span>TELEMETRY</span><span>OFFLINE MODEL</span></header>
+        <div class="ops-readout"><small>LINK INTEGRITY</small><output id="opsIntegrity">100%</output><div class="ops-meter"><i></i></div></div>
+        <div class="ops-readout"><small>SCENARIO CONTACTS</small><output id="opsContacts">0 VIRTUAL</output><div class="ops-meter"><i></i></div></div>
+        <div class="ops-readout"><small>ACTIVE EFFECT</small><output id="opsActiveFx">READY</output><div class="ops-meter"><i></i></div></div>
+        <div class="ops-telemetry-chart" aria-hidden="true"><svg viewBox="0 0 400 105" preserveAspectRatio="none"><polyline id="opsTelemetryPath" points="0,40 50,52 100,35 150,44 200,42 250,59 300,48 350,36 400,49" fill="none" stroke="currentColor" stroke-width="3" /></svg></div>
+      </section>
+      <section class="ops-sector ops-sector-log">
+        <header><span id="opsLogTitle">OPERATIONS LOG</span><button id="opsClearLog" type="button">CLEAR</button></header>
+        <div id="opsLog" class="ops-log" aria-live="polite"></div>
+        <div class="ops-help">TEST SYSTEM · DISPLAY EFFECTS ONLY · NOTHING SENT TO ANOTHER DEVICE</div>
+      </section>
+    </div>
+    <div id="opsRotateHint" class="ops-rotate-hint"><strong>HORIZONTAL MODE</strong><p>Rotate your phone sideways to use the tactical consoles.</p><button id="opsRotateClose" type="button">EXIT</button></div>
+  </section>
+  <script defer src="/ops.js"></script>
+<!-- Local-only creative suite. Does not read another participant's chat, camera or private map. -->
+<div class="lab-dock"><button id="labOpen" type="button" aria-label="Open Custom Terminal Builder, Black Box Replay and Mission Archive">ASE / LAB</button></div>
+<section id="labSuite" class="lab-suite hidden" role="dialog" aria-modal="true" aria-label="ASE Mission Lab" tabindex="-1">
+  <header class="lab-top"><div class="lab-brand"><strong>ASE / MISSION LAB</strong><span>LOCAL EDITOR · SIMULATED OPERATIONS · V2.8</span></div><div class="lab-tabbar" role="tablist" aria-label="Mission tools"><button type="button" data-lab-tab="builder" role="tab" aria-selected="true">TERMINAL BUILDER</button><button type="button" data-lab-tab="replay" role="tab" aria-selected="false">BLACK BOX</button><button type="button" data-lab-tab="archive" role="tab" aria-selected="false">MISSION ARCHIVE</button></div><button id="labExit" type="button">EXIT</button></header>
+  <div id="labToast" class="lab-alert" role="status" aria-live="polite"></div>
+
+  <div id="labBuilder" class="lab-pane lab-builder" role="tabpanel">
+    <aside class="lab-fields">
+      <h2>BUILD A TERMINAL</h2><p class="lab-muted">Customize a fictional console. Save it, launch it, or reopen it from the archive.</p>
+      <label for="labTermName">TERMINAL NAME</label><input id="labTermName" maxlength="32" value="NIGHTFALL STATION" placeholder="Enter a terminal name" autocomplete="off">
+      <label for="labTermTheme">COLOR SYSTEM</label><select id="labTermTheme"><option value="ice">GLACIER / BLUE</option><option value="red">CRIMSON / RED</option><option value="green">PHOSPHOR / GREEN</option><option value="amber">WARNING / AMBER</option><option value="purple">PHANTOM / PURPLE</option><option value="silver">STEEL / SILVER</option></select>
+      <label for="labTermLayout">PANEL LAYOUT</label><select id="labTermLayout"><option value="center">CENTER MAP</option><option value="wide">WIDE MAP</option><option value="sidebar">SIDE MAP</option></select>
+      <label for="labTermWallpaper">MAP WALLPAPER (1–140)</label><input id="labTermWallpaper" type="number" inputmode="numeric" min="1" max="140" value="101">
+      <div class="lab-ability-picks"><label for="labAbilityOne">MODULE 01</label><select id="labAbilityOne"></select><label for="labAbilityTwo">MODULE 02</label><select id="labAbilityTwo"></select><label for="labAbilityThree">MODULE 03</label><select id="labAbilityThree"></select></div>
+      <label for="labTermGrid">GRID STRENGTH <output id="labGridValue">2</output></label><input id="labTermGrid" type="range" min="0" max="4" step="1" value="2">
+      <fieldset class="lab-checks"><legend>DISPLAY MODULES</legend><label><input id="labTermTelemetry" type="checkbox" checked> TELEMETRY</label><label><input id="labTermLog" type="checkbox" checked> ACTIVITY LOG</label><label><input id="labTermScan" type="checkbox" checked> SCAN OVERLAY</label></fieldset>
+      <div class="lab-actions"><button id="labSaveTerminal" type="button">SAVE TERMINAL</button><button id="labLaunchTerminal" type="button">LAUNCH PREVIEW</button></div>
+      <p class="lab-muted">Personal terminals are stored on this device. Their modules produce screen effects only.</p>
+    </aside>
+    <section class="lab-preview-wrap"><div class="lab-panel-title"><strong id="labPreviewTitle">NIGHTFALL STATION</strong><small id="labPreviewCommand">CUSTOM / LOCAL DISPLAY</small></div>
+      <div id="labTerminalPreview" class="lab-terminal-preview lab-layout-center lab-theme-ice"><div class="lab-custom-hud"><span>ASE / FIELD INTERFACE</span><span id="labPreviewClock">00:00:00</span></div><div class="lab-custom-core"><div class="lab-custom-map"><img id="labCustomMap" src="/map-image.png" alt="Fictional mission map"><div id="labCustomGrid" class="lab-custom-grid"></div><div id="labCustomMarks" class="lab-custom-marks"></div><div id="labCustomScan" class="lab-custom-scan"></div><span class="lab-custom-map-label">TRAINING GRID / LOCAL</span></div><aside id="labCustomTelemetry" class="lab-custom-telemetry"><strong>TELEMETRY</strong><output id="labCustomContacts">00 CONTACTS</output><div class="lab-bars"><i></i><i></i><i></i><i></i></div><span>LINK / SIMULATION</span></aside></div><div class="lab-custom-bottom"><div class="lab-ability-list"><button type="button" data-lab-action="scan">SCAN</button><button type="button" data-lab-action="beacon">BEACON</button><button type="button" data-lab-action="clear">CLEAR</button></div><div id="labCustomLog" class="lab-custom-log" aria-live="polite">READY / Tap the map to place a fictional marker.</div></div></div>
+      <div class="lab-saved-panel"><div class="lab-panel-title"><strong>YOUR TERMINALS</strong><small id="labTerminalCount">0 SAVED</small></div><div id="labSavedTerminals" class="lab-saved-list"></div></div>
+    </section>
+  </div>
+
+  <div id="labReplay" class="lab-pane lab-replay hidden" role="tabpanel">
+    <section class="lab-replay-main"><div class="lab-panel-title"><strong>BLACK BOX / VIDEO REPLAY</strong><small>LOCAL RECORDING ANALYSIS</small></div>
+      <div class="lab-source-buttons"><button id="labUseDemo" type="button">LOAD BUILT-IN VIDEO</button><button id="labPickVideo" type="button">USE MY OWN VIDEO</button><input id="labVideoInput" type="file" accept="video/*,.mp4,.webm,.mov" hidden></div>
+      <div class="lab-video-frame"><video id="labReplayVideo" controls playsinline preload="metadata" src="/blackbox-demo.mp4"></video><div class="lab-video-cctv"><span>ASE / BLACK BOX REPLAY</span><span id="labVideoStamp">00:00.0 / ARCHIVED VIDEO</span></div></div>
+      <div class="lab-player-controls"><button id="labPlayPause" type="button">PLAY / PAUSE</button><label>REPLAY SPEED <select id="labReplaySpeed"><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="1.5">1.5x</option><option value="2">2x</option></select></label><output id="labReplayTime">00:00 / 00:12</output></div><input id="labReplaySeek" type="range" min="0" max="1000" value="0" step="1" aria-label="Seek replay timeline">
+      <p class="lab-muted" id="labVideoSourceNote">Built-in sample video is included in this download. Upload your own MP4, WebM, or compatible video to replace it.</p>
+      <div class="lab-mission-form"><label for="labMissionTitle">MISSION NAME</label><input id="labMissionTitle" maxlength="64" value="ECHO-17 REPLAY" placeholder="Mission title"><label for="labMissionNotes">MISSION NOTES</label><textarea id="labMissionNotes" maxlength="1500" rows="3" placeholder="What happened during this fictional mission?"></textarea><label for="labAttachTerminal">ASSIGNED CUSTOM TERMINAL</label><select id="labAttachTerminal"><option value="">NONE</option></select><button id="labOpenAssignedTerminal" type="button">OPEN ASSIGNED TERMINAL</button><button id="labSaveMission" type="button">SAVE TO MISSION ARCHIVE</button></div>
+    </section>
+    <section class="lab-replay-side"><div class="lab-panel-title"><strong>EVENT MAP</strong><small>ADD TIMED MARKERS</small></div><div id="labReplayMap" class="lab-replay-map" tabindex="0" role="button" aria-label="Place a timed mission marker at current video time"><img src="/map-image.png" alt="Fictional map for timed replay"><div class="lab-replay-map-grid"></div><div id="labReplayPins" class="lab-replay-pins"></div><span>ASE / EVENT GRID</span></div><label for="labMarkerText">MARKER NOTE</label><input id="labMarkerText" maxlength="100" placeholder="Example: Vehicle enters sector 4"><p class="lab-muted">Move the video to a moment, enter a note, then tap the map. The marker will appear on replay at that time.</p><div class="lab-panel-title"><strong>EVENT TIMELINE</strong><button id="labClearEvents" type="button">CLEAR EVENTS</button></div><div id="labEventList" class="lab-event-list"></div></section>
+  </div>
+
+  <div id="labArchive" class="lab-pane lab-archive hidden" role="tabpanel"><aside class="lab-archive-side"><div class="lab-panel-title"><strong>MISSION ARCHIVE</strong><small>THIS DEVICE ONLY</small></div><p class="lab-muted">Saved missions contain notes, timed map markers, video references, and the assigned terminal. Personal video is saved in your browser's storage where supported.</p><div class="lab-actions"><button id="labExportArchive" type="button">EXPORT INDEX</button><button id="labImportArchive" type="button">IMPORT INDEX</button><input id="labArchiveInput" type="file" accept="application/json,.json" hidden></div><p class="lab-muted">JSON export contains mission details, not large video files. Keep an original copy of any personal video when moving to a different phone.</p><div id="labArchiveStats" class="lab-archive-stats"></div></aside><section class="lab-archive-main"><div class="lab-panel-title"><strong>STORED MISSIONS</strong><button id="labArchiveRefresh" type="button">REFRESH</button></div><div id="labMissionList" class="lab-mission-list"></div></section></div>
+</section>
+
+
+  <script defer src="/lab.js"></script>
+  <script defer src="/suite.js"></script>
+  <script defer src="/quick-access.js"></script>
+  <script defer src="/map-upgrades.js"></script>
+  <script defer src="/map-extras.js"></script>
+  <script defer src="/live-direction.js"></script>
+  <script defer src="/creator-dossier.js"></script>
+  <script defer src="/creator-mark-view.js"></script>
+<script defer src="/time-lens.js"></script></body>
+</html>

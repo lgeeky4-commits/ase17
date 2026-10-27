@@ -1,0 +1,17 @@
+{
+  "name": "crimson-chat-map",
+  "version": "3.7.0",
+  "description": "ASE Crimson Chat: six-person chat, clustered and searchable map markers, saved areas, and 20-event MP3 Sound Studio",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js && node --check public/app.js && node --check public/map-upgrades.js && node --check public/map-extras.js && node --check public/suite.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  }
+}

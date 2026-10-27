@@ -1,0 +1,111 @@
+/* ASE v3.1 | Quick markers, progressive zoom, map media. Crisp square corners. */
+.map-world{position:absolute;inset:0;width:100%;height:100%;transform-origin:50% 50%;will-change:transform;overflow:visible;z-index:0}
+.map-world img{width:100%;height:100%;display:block}
+.map-world .map-lines,.map-world .map-pins{position:absolute;inset:0;z-index:2}
+.map-canvas{touch-action:none;isolation:isolate}
+.map-canvas .drone-grid,.map-canvas .aim-reticle{pointer-events:none}
+.ase-zoom-controls{position:absolute;z-index:20;right:6px;top:6px;display:flex;align-items:center;gap:3px;padding:3px;background:#05080fef;border:1px solid #c14351;box-shadow:0 3px 12px #000a}
+.ase-zoom-controls button{border-radius:0;background:#2d1019;border:1px solid #a3384b;color:#fff;font:bold 11px monospace;min-width:28px;min-height:30px;padding:3px}
+.ase-zoom-controls output{font:10px monospace;color:#c5e1e9;min-width:31px;text-align:center}
+.map-pin{--marker-color:#ff4d62}
+.map-pin.importance-1{background:var(--marker-color);color:#000;border:2px solid #fff;z-index:11;min-height:23px;min-width:23px}
+.map-pin.importance-2{background:#111723;color:var(--marker-color);border:1px solid var(--marker-color);z-index:9;min-height:17px;min-width:17px}
+.map-pin.drag-moving{opacity:.85;outline:2px dashed #fff;z-index:40;touch-action:none}
+.map-pin.ase-highlight{outline:3px solid #ffe56d;box-shadow:0 0 17px #fff!important}
+.ase-mark-stamp{position:absolute;transform:translate(-50%,calc(-100% - 11px));background:#070d16db;color:#fff;border-bottom:1px solid var(--marker-color);padding:2px 5px;font:bold 9px monospace;white-space:nowrap;pointer-events:none;z-index:8;max-width:110px}
+.ase-priority-detail,.ase-mini-preview{position:absolute;transform:translate(-50%,calc(-100% - 37px));z-index:12;border:1px solid var(--marker-color);background:#080c18ed;color:#dff5ff;box-shadow:0 3px 15px #000d;pointer-events:auto;max-width:145px;text-align:left}
+.ase-priority-detail{min-width:96px;padding:6px;display:flex;flex-direction:column;gap:3px;font:9px/1.25 monospace;word-break:break-word}
+.ase-priority-detail strong{font-size:9px;color:#fff}
+.ase-priority-detail small{color:#f88b95;font-size:9px}
+.ase-mini-preview{padding:0;width:130px;display:block;font:9px monospace;cursor:pointer}
+.ase-mini-preview .ase-mini-caption{display:block;background:#0d1524;padding:4px;color:#e5fbff;white-space:nowrap}
+.ase-mini-media{height:68px;width:100%;overflow:hidden;background:#0c1726;color:#c0d7e2;display:grid;place-items:center}
+.ase-mini-media img,.ase-mini-media video{width:100%;height:100%;object-fit:cover}
+.ase-mark-strip{display:flex;flex-direction:column;gap:4px;background:#0b0b16;border:1px solid #6d2030;padding:5px;flex:none}
+.ase-mark-strip-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.ase-mark-strip button,.ase-mark-strip select,.ase-favorite-settings select{border-radius:0;color:#fff;border:1px solid #974053;background:#32101e;font:bold 9px/1.1 monospace;min-width:0;padding:7px 2px;cursor:pointer}
+.ase-mark-strip-row button{min-height:36px}
+.ase-mark-strip button.active,.ase-mark-strip button:hover{border-color:#ff6177;background:#642136}
+.ase-mark-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+.ase-mark-options label{font:8px/1.35 monospace;color:#dca3b1;min-width:0}
+.ase-mark-options select{display:block;width:100%;margin-top:2px;font-size:9px;min-height:29px;background:#10151f;color:#e9f5ff;border-color:#704858}
+.ase-phrase-bar{display:flex;overflow-x:auto;gap:5px;scrollbar-width:thin;padding:2px 0}
+.ase-phrase-bar button{flex:none;white-space:nowrap;padding:5px 8px;font-size:9px;background:#131923;border-color:#5d4c5e}
+.ase-phrase-bar button.active{background:#6d172d;color:#fff}
+.ase-map-hint{font:10px/1.4 monospace;color:#8bc3d1;margin:7px 0}
+.ase-camera-mode{display:flex;align-items:center;justify-content:space-between;gap:7px;background:#15111c;border:1px solid #7e3a51;padding:9px;font:11px monospace;color:#fff}
+.ase-camera-mode select{background:#111c25;color:#fff;border:1px solid #ae4156;padding:7px;font:10px monospace}
+#aseVoiceDialog audio,#aseListenDialog audio{min-height:45px}
+.map-chat-preview{padding:4px!important}
+.map-message-link{width:100%;border:1px solid #d55367;background:#181724;color:#f8eaf2;min-height:42px;padding:8px;text-align:left;font:10px/1.4 monospace;cursor:pointer}
+#aseHistoryTab{border:1px solid #862e43;background:#19111b;color:#eee;font:10px monospace;padding:6px;flex:1}
+#aseHistoryTab.active{background:#850e29}
+.ase-history-entry{display:block;width:100%;text-align:left;background:#111523;color:#d3e6ef;border-bottom:1px solid #593545;border-radius:0;font:10px/1.5 monospace;padding:8px;cursor:pointer}
+.ase-history-entry:hover{background:#2e1c2c}
+#aseQuickAccess .ase-favorite-bar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;background:#070a10e3;border:1px solid #763046;border-top:0;padding:5px 7px;pointer-events:auto}
+#aseQuickAccess .ase-favorite-bar button{min-height:29px;color:#c9eff7;background:#101d2b;border:1px solid #4b788b;font:bold 9px monospace;padding:5px 3px;min-width:0}
+#aseQuickAccess .ase-favorite-settings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;align-items:center;border-top:1px solid #5a2838;padding-top:10px;margin-top:9px}
+#aseQuickAccess .ase-favorite-settings strong{grid-column:1/-1;font:10px monospace}
+#aseQuickAccess .ase-favorite-settings select{background:#0c1622;color:#fff;padding:7px 4px;font-size:9px;min-width:0}
+#aseQuickAccess .ase-quick-bar{grid-template-columns:repeat(4,minmax(0,1fr))}
+#aseQuickAccess #aseOneTapQuick{background:#80152d;border-color:#ff778b}
+.map-canvas.zoom-details .ase-mark-stamp{color:#cbe9f5}
+.map-canvas:not(.zoom-details) .ase-priority-detail,.map-canvas:not(.zoom-details) .ase-mini-preview{display:none!important}
+@media(max-width:450px){
+  .ase-mark-strip-row{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .ase-mark-options{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ase-mark-strip-row button{min-height:34px}
+  .ase-zoom-controls{right:4px;top:4px}
+  .ase-zoom-controls button{min-width:25px;min-height:27px}
+  .ase-mark-stamp{font-size:8px}
+  .ase-mini-preview{max-width:110px}
+  .ase-mini-media{height:54px}
+}
+@media(max-height:510px){
+  .ase-mark-strip{gap:2px;padding:3px}
+  .ase-mark-strip-row button{min-height:25px;padding:3px}
+  .ase-phrase-bar{max-height:33px}
+  .ase-mark-options label{font-size:8px}
+  .ase-mark-options select{min-height:22px;padding:3px}
+  #aseQuickAccess .ase-favorite-bar button{min-height:24px}
+}
+@media(prefers-reduced-motion:reduce){.map-pin,.ase-mini-preview,.ase-priority-detail{transition:none!important}}
+
+/* The chat dock never blocks map tools; matching favorite shortcuts live inside the map panel. */
+body:has(#mapScreen:not(.hidden)) #aseQuickAccess{display:none!important}
+.ase-map-favorite-bar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.ase-map-favorite-bar button{background:#101d2c;border:1px solid #396781;color:#bff2ff;font:bold 9px monospace;min-height:26px;padding:4px 2px}
+/* Three-way map tabs, extra space for marker history and notes on phones. */
+.map-tabs{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.map-tabs #aseHistoryTab{padding:7px 2px;font-size:10px}
+.map-screen{padding-bottom:3.5%!important}
+.map-panel{overflow:hidden}
+.annotation-list{min-height:28px;overflow:auto;overscroll-behavior:contain}
+@media(max-width:450px){.map-canvas{max-height:min(49%,380px)}.map-actions{grid-template-columns:repeat(3,minmax(0,1fr))!important}.map-actions button{min-height:28px}}
+@media(max-height:510px){.map-screen{padding-bottom:1%!important}.map-canvas{max-height:38%!important}.ase-mark-strip-row{grid-template-columns:repeat(5,minmax(0,1fr))}.ase-mark-options{grid-template-columns:repeat(4,minmax(0,1fr))}}
+/* On short screens, scroll the map section instead of covering lower controls. */
+.map-panel{overflow-y:auto!important;overscroll-behavior:contain;scrollbar-width:thin}
+.map-panel .annotation-list{min-height:56px;flex:1 0 56px}
+
+/* v3.2 area drawing, cluster grouping and search access */
+.map-lines .ase-area-polygon{stroke-linejoin:round;pointer-events:none;filter:drop-shadow(0 0 3px rgba(255,255,255,.13))}
+.map-lines .ase-area-polygon.draft{fill-opacity:.10;stroke-dasharray:12 8}
+.ase-map-cluster{position:absolute;transform:translate(-50%,-50%);z-index:16!important;display:grid;place-items:center;min-width:31px;min-height:31px;padding:3px 7px;border-radius:0;color:white;background:#321424;border:1px solid #ff6c85;box-shadow:0 0 0 3px #170c18bd,0 0 15px #ff47654f;font:bold 12px monospace;cursor:pointer}
+.ase-search-panel{display:grid;gap:5px;padding:7px;background:#080d16;border:1px solid #92374e}
+.ase-search-row{display:grid;grid-template-columns:1fr 103px 55px;gap:5px}
+.ase-search-row input,.ase-search-row select,.ase-search-row button{border:1px solid #734054;background:#141c29;color:#effaff;min-width:0;padding:7px;font:10px monospace;border-radius:0}
+.ase-search-results{max-height:180px;overflow:auto;display:grid;gap:3px}
+.ase-search-results button{background:#111b2b;color:#dceef3;text-align:left;font:10px/1.4 monospace;padding:6px;border:1px solid #354c5c;word-break:break-word}
+.ase-search-toolbar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.ase-search-toolbar button{min-height:30px;background:#2d101d;color:white;border:1px solid #964456;font:bold 10px monospace;min-width:0;border-radius:0}
+.ase-search-toolbar button.active{background:#8b1939;border-color:#ff6c84}
+@media(max-width:450px){.ase-search-row{grid-template-columns:1fr 80px}.ase-search-row button{grid-column:1/-1}}
+
+/* v3.5: map pan + higher zoom; all markers and live arrows share world transform. */
+.map-canvas{touch-action:none;overscroll-behavior:contain}
+.map-canvas.pan-available{cursor:grab}
+.map-canvas.pan-available:active{cursor:grabbing}
+.map-canvas.pan-mode{outline:1px solid #88d4e9;outline-offset:-1px}
+.ase-zoom-controls #asePanToggle{font-size:9px;min-width:57px;padding:3px 5px}
+.ase-zoom-controls #asePanToggle.active{background:#164b62;border-color:#a2e4f8}
+@media(max-width:450px){.ase-zoom-controls{gap:2px;padding:2px}.ase-zoom-controls #asePanToggle{min-width:51px;font-size:8px;padding:2px}.ase-zoom-controls button{min-width:24px;min-height:27px}}

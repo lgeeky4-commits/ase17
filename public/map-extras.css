@@ -1,0 +1,41 @@
+/* ASE v3.2: Sound Studio, no floating controls covering the map */
+.ase-sound-dialog{position:fixed;z-index:7000;border:1px solid #c6425b;background:#080e18;color:#dfedf3;max-width:min(94vw,730px);max-height:89dvh;width:700px;padding:14px;overflow:auto;box-shadow:0 0 0 100vmax #000b;border-radius:0;font:11px/1.5 Consolas,monospace}
+.ase-sound-dialog::backdrop{background:#000b}
+.ase-sound-heading{display:flex;justify-content:space-between;gap:10px;align-items:center;border-bottom:1px solid #793b50;padding-bottom:9px;letter-spacing:1.3px;font-size:13px}
+.ase-sound-dialog p{font:11px/1.5 Consolas,monospace;color:#99bbc7}
+.ase-sound-dialog button,.ase-sound-dialog input[type=file]{border-radius:0;color:#ebf7ff;background:#1e2533;border:1px solid #70445b;min-width:0;padding:7px 6px;font:10px Consolas,monospace}
+.ase-sound-dialog button{cursor:pointer}
+.ase-sound-master{display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:9px;background:#131724;border:1px solid #693246}
+.ase-sound-master label{display:flex;align-items:center;gap:8px}
+.ase-sound-rows{display:grid;gap:6px;margin-top:10px}
+.ase-sound-row{display:grid;grid-template-columns:minmax(100px,1.3fr) 92px 47px minmax(125px,1.5fr) 85px 65px;gap:5px;align-items:center;padding:7px;background:#121b27;border:1px solid #4a3545}
+.ase-sound-row strong{font-size:10px}.ase-sound-status{font-size:9px;color:#68d4e8}
+.ase-sound-row input[type=file]{font-size:9px;width:100%;padding:5px 3px}
+.ase-sound-footer{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-top:12px;border-top:1px solid #6e3850;padding-top:12px;font-size:10px}
+.ase-sound-footer a{padding:10px;background:#65213a;color:white;text-decoration:none;border:1px solid #ff5f7d}
+.ase-sound-footer span{color:#91abb8}
+.ase-studio-dock,.ase-map-sounds{border:1px solid #7b344b;background:#3e1225;color:#f5eff3;padding:9px 7px;cursor:pointer;font:bold 10px Consolas,monospace;border-radius:0;min-width:0}
+.ase-map-sounds{width:100%}
+@media(max-width:680px){.ase-sound-row{grid-template-columns:1fr 1fr 1fr;gap:6px}.ase-sound-row strong{grid-column:1/3}.ase-sound-row input[type=file]{grid-column:1/4}.ase-sound-row .ase-sound-status{grid-column:3}.ase-sound-footer{flex-direction:column;align-items:stretch}.ase-sound-dialog{padding:9px}}
+@media(max-width:400px){.ase-sound-row{grid-template-columns:1fr 1fr}.ase-sound-row strong{grid-column:1}.ase-sound-row .ase-sound-status{grid-column:2}.ase-sound-row input[type=file]{grid-column:1/3}}
+
+.ase-sound-builder{margin-top:15px;border:1px solid #9c3857;background:#150f1c;padding:12px}
+.ase-sound-builder h3{font-size:12px;letter-spacing:1px;margin:0 0 8px;color:#ff8ea5}
+.ase-sound-builder-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:10px 0}
+.ase-sound-builder label{display:grid;gap:4px;font:bold 10px Consolas,monospace;color:#b4d7e1}
+.ase-sound-builder select{background:#09121b;color:#e2f4fd;border:1px solid #78435b;padding:10px;min-width:0;border-radius:0;font:11px Consolas,monospace}
+.ase-sound-builder-actions{display:flex;gap:7px;flex-wrap:wrap;margin:9px 0}
+.ase-sound-builder-actions button{flex:1;min-width:150px;background:#4b1729;border:1px solid #ed5b81;padding:10px;color:white;font:bold 10px Consolas,monospace}
+.ase-sound-builder-actions button:disabled{opacity:.45}
+#aseComposeStatus{display:block;margin-top:8px;color:#a7cbd5;font:10px/1.5 Consolas,monospace}
+@media(max-width:500px){.ase-sound-builder-grid{grid-template-columns:1fr}.ase-sound-row{grid-template-columns:1fr 1fr!important;gap:5px}.ase-sound-row strong{grid-column:1}.ase-sound-row .ase-sound-status{grid-column:2}.ase-sound-row input[type=file]{grid-column:1/3}.ase-sound-row button{min-width:0}}
+
+/* Keep drawing space usable on a landscape phone. Vertical panels scroll below. */
+@media(orientation:landscape) and (max-height:510px){
+ .map-panel{overflow-y:auto!important}
+ .map-canvas{height:240px!important;min-height:240px!important;max-height:none!important;max-width:100%!important;width:min(100%,470px)!important;aspect-ratio:222/190!important;flex:none!important}
+ .ase-mark-strip{position:relative!important}
+}
+/* Map overlay is pointer-transparent; cluster buttons are independently clickable. */
+.ase-map-cluster{pointer-events:auto!important}
+#toast{pointer-events:none}

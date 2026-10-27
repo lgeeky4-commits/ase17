@@ -1,0 +1,5 @@
+/* The two-step mission confirmation stays in the matching public/private map list. */
+.annotation-row .mission-request-button,.annotation-row .mission-confirm-button{display:block;width:100%;min-height:38px;text-transform:uppercase;letter-spacing:.6px;padding:9px;margin-top:5px;font:900 11px Consolas,monospace;border:1px solid #6a95a2;background:#1b343f;color:#e2f4fa;cursor:pointer;border-radius:0}
+.annotation-row .mission-confirm-button{border-color:#b7dcbe;background:#234737;color:#e8fff0}
+.annotation-row .mission-pending{display:block;width:100%;font:10px/1.5 Consolas,monospace;color:#ffd48a;margin:6px 0}
+.annotation-row{flex-wrap:wrap}
